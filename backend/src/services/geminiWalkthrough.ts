@@ -15,7 +15,7 @@ export interface WalkthroughResponse {
   codeExplanation: string;
 }
 
-const GEMINI_MODEL = 'gemini-1.5-flash';
+const GEMINI_MODEL = 'gemini-3.5-flash';
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 const RESPONSE_KEYS: Array<keyof WalkthroughResponse> = [
   'patternRecognition',

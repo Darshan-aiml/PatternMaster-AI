@@ -1,7 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 import { encryptData, decryptData } from './encryption';
 
-const db = SQLite.openDatabaseSync('patternmaster.db');
+let db: SQLite.SQLiteDatabase;
 
 // In-memory cache for frequently accessed data
 const cache = {
@@ -52,6 +52,7 @@ const migrateDatabase = async () => {
 
 export const initDB = async () => {
   try {
+    db = await SQLite.openDatabaseAsync('patternmaster.db');
     await db.execAsync(`
       PRAGMA journal_mode = WAL;
       PRAGMA synchronous = NORMAL;
