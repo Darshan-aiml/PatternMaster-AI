@@ -3,7 +3,6 @@
 PatternMaster is a React Native mobile application designed to help developers master Data Structures and Algorithms through pattern-based learning. Instead of isolating problems, the platform groups questions by underlying structural patterns and provides optimized algorithmic templates.
 
 ## Live Build & Downloads
-* **Expo Web Build**: [View Web Build on Vercel/Expo](https://expo.dev/accounts/darsjajy530/projects/pattern-master/builds/671fb7b8-9418-4a5c-9866-10d97e41175d)
 * **Android APK**: Download `patternmaster-ai.apk` directly from this repository to install on your Android device.
 
 ---
