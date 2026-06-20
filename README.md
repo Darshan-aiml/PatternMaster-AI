@@ -97,27 +97,28 @@ This document provides a production-grade System Design Specification for the Pa
 ## 2. Use Case Diagram
 
 ```mermaid
-left_to_right_direction
-actor User as "User (Mobile Client)"
-actor OIDC as "Identity Provider (Google/OIDC)"
-actor LLM as "Gemini AI API"
+flowchart LR
+    User(("User\n(Mobile Client)"))
+    OIDC(("Identity Provider\n(Google/OIDC)"))
+    LLM(("Gemini AI API"))
 
-rectangle System {
-    usecase UC1 as "Sign In / Onboard"
-    usecase UC2 as "Practice Problems & Track Progress"
-    usecase UC3 as "View Personalized Recommendations"
-    usecase UC4 as "Request AI Mentor Explanations"
-    usecase UC5 as "Sync Progress to Cloud"
-}
+    subgraph System
+        direction TB
+        UC1(["Sign In / Onboard"])
+        UC2(["Practice Problems & Track Progress"])
+        UC3(["View Personalized Recommendations"])
+        UC4(["Request AI Mentor Explanations"])
+        UC5(["Sync Progress to Cloud"])
+    end
 
-User --> UC1
-User --> UC2
-User --> UC3
-User --> UC4
-User --> UC5
+    User --> UC1
+    User --> UC2
+    User --> UC3
+    User --> UC4
+    User --> UC5
 
-UC1 --> OIDC : "Verify Token"
-UC4 --> LLM : "Generate Explanation"
+    UC1 -- "Verify Token" --> OIDC
+    UC4 -- "Generate Explanation" --> LLM
 ```
 
 ---
@@ -171,14 +172,17 @@ The API Gateway is the single entry point for client requests, sitting in front 
 
 For native/mobile environments, client credentials cannot be stored securely. We enforce OIDC Authorization Code Flow with PKCE:
 
-```
-[Mobile App] ------------( 1. Open Authorization View )------------> [OIDC IDP]
-[Mobile App] <-----------( 2. Callback with Auth Code )------------- [OIDC IDP]
-     |
-     +---( 3. Token Exchange with Verifier + Auth Code )-----> [OIDC Token Endpoint]
-[Mobile App] <-----------( 4. Access + ID + Refresh Tokens )--------- [OIDC Token Endpoint]
-     |
-     +---( 5. Securely Saves Tokens in Device Keychain )
+```mermaid
+sequenceDiagram
+    participant App as Mobile App
+    participant IDP as OIDC IDP
+    participant Token as OIDC Token Endpoint
+
+    App->>IDP: 1. Open Authorization View
+    IDP-->>App: 2. Callback with Auth Code
+    App->>Token: 3. Token Exchange (Verifier + Auth Code)
+    Token-->>App: 4. Access + ID + Refresh Tokens
+    Note over App: 5. Securely Saves Tokens in Device Keychain
 ```
 
 - **JWT Validation**: APIs cryptographically verify the signature (`RS256`) against Google's public key (JWKS) and validate `iss` (Issuer), `aud` (Audience), and `exp` (Expiration) claims.
