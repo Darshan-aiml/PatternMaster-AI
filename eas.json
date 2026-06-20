@@ -1,0 +1,33 @@
+{
+  "cli": {
+    "version": ">= 20.3.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_GEMINI_API_KEY": "AQ.Ab8RN6LlDw5o5EiUhXw4A3DOTv6UazCyi0DnD8Jz9ClcpuVjdw",
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "84013112055-gam8vo04o1k2blhe8e06giomc96m4kup.apps.googleusercontent.com"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_GEMINI_API_KEY": "AQ.Ab8RN6LlDw5o5EiUhXw4A3DOTv6UazCyi0DnD8Jz9ClcpuVjdw",
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "84013112055-gam8vo04o1k2blhe8e06giomc96m4kup.apps.googleusercontent.com"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_GEMINI_API_KEY": "AQ.Ab8RN6LlDw5o5EiUhXw4A3DOTv6UazCyi0DnD8Jz9ClcpuVjdw",
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "84013112055-gam8vo04o1k2blhe8e06giomc96m4kup.apps.googleusercontent.com"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

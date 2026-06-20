@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "PatternMaster",
+    "slug": "pattern-master",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.anonymous.pattern-master"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.darsjajy530.patternmaster"
+    },
+    "scheme": "com.darsjajy530.patternmaster",
+    "extra": {
+      "eas": {
+        "projectId": "f6f3004d-b842-48c0-a5aa-57eff9f8534e"
+      }
+    },
+    "plugins": [
+      "expo-web-browser"
+    ]
+  }
+}
