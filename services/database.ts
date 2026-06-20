@@ -1,7 +1,9 @@
 import * as SQLite from 'expo-sqlite';
+import { Platform } from 'react-native';
 import { encryptData, decryptData } from './encryption';
 
 let db: SQLite.SQLiteDatabase;
+const isWeb = Platform.OS === 'web';
 
 // In-memory cache for frequently accessed data
 const cache = {
@@ -14,6 +16,7 @@ const cache = {
 
 // Migration: Add missing columns to existing tables
 const migrateDatabase = async () => {
+  if (isWeb) return;
   try {
     const profileInfo = await db.getAllAsync('PRAGMA table_info(profile)');
     const profileColumns = profileInfo.map((c: any) => c.name);
@@ -51,6 +54,10 @@ const migrateDatabase = async () => {
 };
 
 export const initDB = async () => {
+  if (isWeb) {
+    console.log('Web environment detected, using localStorage for database');
+    return;
+  }
   try {
     const initPromise = (async () => {
       db = await SQLite.openDatabaseAsync('patternmaster.db');
@@ -113,6 +120,16 @@ export const initDB = async () => {
 };
 
 export const saveProfile = async (profile: any) => {
+  if (isWeb) {
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('profile', JSON.stringify(profile));
+      }
+    } catch (e) {
+      console.error('Error saving profile to localStorage:', e);
+    }
+    return;
+  }
   try {
     const encryptedName = await encryptData(profile.userName || '');
     const now = Date.now();
@@ -141,6 +158,15 @@ export const saveProfile = async (profile: any) => {
 };
 
 export const getProfile = async () => {
+  if (isWeb) {
+    try {
+      if (typeof window !== 'undefined') {
+        const data = localStorage.getItem('profile');
+        if (data) return JSON.parse(data);
+      }
+    } catch (e) { console.error('Error getting profile from localStorage:', e); }
+    return null;
+  }
   try {
     // Check cache first
     const now = Date.now();
@@ -173,7 +199,25 @@ export const getProfile = async () => {
   }
 };
 
-export const saveProgress = async (progress: any) => {
+export const saveProgress = async (progressItem: any) => {
+  if (isWeb) {
+    try {
+      if (typeof window !== 'undefined') {
+        const data = localStorage.getItem('progress');
+        const progressArr = data ? JSON.parse(data) : [];
+        const index = progressArr.findIndex((p: any) => p.problemId === progressItem.problemId);
+        if (index >= 0) {
+          progressArr[index] = progressItem;
+        } else {
+          progressArr.push(progressItem);
+        }
+        localStorage.setItem('progress', JSON.stringify(progressArr));
+      }
+    } catch (e) {
+      console.error('Error saving progress to localStorage:', e);
+    }
+    return;
+  }
   try {
     const now = Date.now();
     await db.runAsync(
@@ -202,6 +246,15 @@ export const saveProgress = async (progress: any) => {
 };
 
 export const getProgress = async () => {
+  if (isWeb) {
+    try {
+      if (typeof window !== 'undefined') {
+        const data = localStorage.getItem('progress');
+        if (data) return JSON.parse(data);
+      }
+    } catch (e) { console.error('Error getting progress from localStorage:', e); }
+    return [];
+  }
   try {
     // Check cache first
     const now = Date.now();
@@ -230,6 +283,18 @@ export const getProgress = async () => {
 
 // Get progress by status for filtering
 export const getProgressByStatus = async (status: string) => {
+  if (isWeb) {
+    try {
+      if (typeof window !== 'undefined') {
+        const data = localStorage.getItem('progress');
+        if (data) {
+          const arr = JSON.parse(data);
+          return arr.filter((p: any) => p.status === status).sort((a: any, b: any) => b.masteryLevel - a.masteryLevel);
+        }
+      }
+    } catch (e) {}
+    return [];
+  }
   try {
     const results = await db.getAllAsync(
       'SELECT * FROM progress WHERE status = ? ORDER BY masteryLevel DESC',
@@ -244,6 +309,18 @@ export const getProgressByStatus = async (status: string) => {
 
 // Get progress sorted by mastery level
 export const getProgressByMastery = async () => {
+  if (isWeb) {
+    try {
+      if (typeof window !== 'undefined') {
+        const data = localStorage.getItem('progress');
+        if (data) {
+          const arr = JSON.parse(data);
+          return arr.filter((p: any) => p.masteryLevel > 0).sort((a: any, b: any) => a.masteryLevel - b.masteryLevel);
+        }
+      }
+    } catch (e) {}
+    return [];
+  }
   try {
     const results = await db.getAllAsync(
       'SELECT * FROM progress WHERE masteryLevel > 0 ORDER BY masteryLevel ASC'
@@ -257,6 +334,18 @@ export const getProgressByMastery = async () => {
 
 // Get specific problem progress
 export const getProblemProgress = async (problemId: string) => {
+  if (isWeb) {
+    try {
+      if (typeof window !== 'undefined') {
+        const data = localStorage.getItem('progress');
+        if (data) {
+          const arr = JSON.parse(data);
+          return arr.find((p: any) => p.problemId === problemId) || null;
+        }
+      }
+    } catch (e) {}
+    return null;
+  }
   try {
     const result = await db.getFirstAsync(
       'SELECT * FROM progress WHERE problemId = ?',
@@ -271,6 +360,12 @@ export const getProblemProgress = async (problemId: string) => {
 
 // Batch update progress (for syncing)
 export const batchUpdateProgress = async (progressList: any[]) => {
+  if (isWeb) {
+    for (const p of progressList) {
+      await saveProgress(p);
+    }
+    return;
+  }
   try {
     for (const progress of progressList) {
       await saveProgress(progress);
@@ -282,6 +377,20 @@ export const batchUpdateProgress = async (progressList: any[]) => {
 
 // Clear old data (optional maintenance)
 export const clearOldProgress = async (daysOld: number = 90) => {
+  if (isWeb) {
+    try {
+      if (typeof window !== 'undefined') {
+        const data = localStorage.getItem('progress');
+        if (data) {
+          const arr = JSON.parse(data);
+          const cutoffTime = Date.now() - (daysOld * 24 * 60 * 60 * 1000);
+          const newArr = arr.filter((p: any) => !(p.status === 'unsolved' && p.updatedAt < cutoffTime));
+          localStorage.setItem('progress', JSON.stringify(newArr));
+        }
+      }
+    } catch (e) {}
+    return;
+  }
   try {
     const cutoffTime = Date.now() - (daysOld * 24 * 60 * 60 * 1000);
     await db.runAsync(
@@ -299,6 +408,21 @@ export const clearOldProgress = async (daysOld: number = 90) => {
 
 // Get database stats
 export const getDatabaseStats = async () => {
+  if (isWeb) {
+    try {
+      if (typeof window !== 'undefined') {
+        const data = localStorage.getItem('progress');
+        if (data) {
+          const arr = JSON.parse(data);
+          return {
+            totalProblems: arr.length,
+            solvedProblems: arr.filter((p: any) => p.status === 'solved').length
+          };
+        }
+      }
+    } catch (e) {}
+    return { totalProblems: 0, solvedProblems: 0 };
+  }
   try {
     const progressCount = await db.getFirstAsync(
       'SELECT COUNT(*) as count FROM progress'
@@ -320,6 +444,14 @@ export const getDatabaseStats = async () => {
 
 // Reset database by deleting all rows in profile, progress, and ai_explanations tables
 export const resetDatabase = async () => {
+  if (isWeb) {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('profile');
+      localStorage.removeItem('progress');
+      localStorage.removeItem('ai_explanations');
+    }
+    return;
+  }
   try {
     await db.runAsync('DELETE FROM progress');
     await db.runAsync('DELETE FROM profile');
@@ -336,6 +468,19 @@ export const resetDatabase = async () => {
 };
 
 export const saveAIExplanation = async (problemId: string, explanation: string) => {
+  if (isWeb) {
+    try {
+      if (typeof window !== 'undefined') {
+        const data = localStorage.getItem('ai_explanations');
+        const exps = data ? JSON.parse(data) : {};
+        exps[problemId] = explanation;
+        localStorage.setItem('ai_explanations', JSON.stringify(exps));
+      }
+    } catch (e) {
+      console.error('Error saving AI explanation to localStorage:', e);
+    }
+    return;
+  }
   try {
     const encryptedExplanation = await encryptData(explanation);
     const now = Date.now();
@@ -351,6 +496,18 @@ export const saveAIExplanation = async (problemId: string, explanation: string) 
 };
 
 export const getAIExplanation = async (problemId: string) => {
+  if (isWeb) {
+    try {
+      if (typeof window !== 'undefined') {
+        const data = localStorage.getItem('ai_explanations');
+        if (data) {
+          const exps = JSON.parse(data);
+          return exps[problemId] || null;
+        }
+      }
+    } catch (e) {}
+    return null;
+  }
   try {
     const result = await db.getFirstAsync(
       'SELECT explanation FROM ai_explanations WHERE problemId = ?',
@@ -366,6 +523,19 @@ export const getAIExplanation = async (problemId: string) => {
 };
 
 export const deleteAIExplanation = async (problemId: string) => {
+  if (isWeb) {
+    try {
+      if (typeof window !== 'undefined') {
+        const data = localStorage.getItem('ai_explanations');
+        if (data) {
+          const exps = JSON.parse(data);
+          delete exps[problemId];
+          localStorage.setItem('ai_explanations', JSON.stringify(exps));
+        }
+      }
+    } catch (e) {}
+    return;
+  }
   try {
     await db.runAsync('DELETE FROM ai_explanations WHERE problemId = ?', [problemId]);
   } catch (error) {

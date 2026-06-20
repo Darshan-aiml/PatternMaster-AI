@@ -4,7 +4,10 @@ import * as SecureStore from 'expo-secure-store';
 import * as AuthSession from 'expo-auth-session';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import CryptoJS from 'crypto-js';
+import { Platform } from 'react-native';
 import { getLocalUsers, saveLocalUser } from './secureStore';
+
+const isWeb = Platform.OS === 'web';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -23,6 +26,14 @@ export const saveAuthTokens = async (tokens: {
   idToken?: string;
   refreshToken?: string;
 }) => {
+  if (isWeb) {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(SECURE_ACCESS_TOKEN_KEY, tokens.accessToken);
+      if (tokens.idToken) localStorage.setItem(SECURE_ID_TOKEN_KEY, tokens.idToken);
+      if (tokens.refreshToken) localStorage.setItem(SECURE_REFRESH_TOKEN_KEY, tokens.refreshToken);
+    }
+    return;
+  }
   try {
     await SecureStore.setItemAsync(SECURE_ACCESS_TOKEN_KEY, tokens.accessToken);
     if (tokens.idToken) {
@@ -40,6 +51,16 @@ export const saveAuthTokens = async (tokens: {
  * Retrieves the stored session tokens.
  */
 export const getAuthTokens = async () => {
+  if (isWeb) {
+    if (typeof window !== 'undefined') {
+      return {
+        accessToken: localStorage.getItem(SECURE_ACCESS_TOKEN_KEY),
+        idToken: localStorage.getItem(SECURE_ID_TOKEN_KEY),
+        refreshToken: localStorage.getItem(SECURE_REFRESH_TOKEN_KEY)
+      };
+    }
+    return { accessToken: null, idToken: null, refreshToken: null };
+  }
   try {
     const accessToken = await SecureStore.getItemAsync(SECURE_ACCESS_TOKEN_KEY);
     const idToken = await SecureStore.getItemAsync(SECURE_ID_TOKEN_KEY);
@@ -55,12 +76,20 @@ export const getAuthTokens = async () => {
  * Clears all authentication tokens from secure storage.
  */
 export const clearAuthTokens = async () => {
+  if (isWeb) {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(SECURE_ACCESS_TOKEN_KEY);
+      localStorage.removeItem(SECURE_ID_TOKEN_KEY);
+      localStorage.removeItem(SECURE_REFRESH_TOKEN_KEY);
+    }
+    return;
+  }
   try {
     await SecureStore.deleteItemAsync(SECURE_ACCESS_TOKEN_KEY);
     await SecureStore.deleteItemAsync(SECURE_ID_TOKEN_KEY);
     await SecureStore.deleteItemAsync(SECURE_REFRESH_TOKEN_KEY);
   } catch (error) {
-    console.error('Failed to clear authentication tokens:', error);
+    console.error('Failed to clear authentication tokens securely:', error);
   }
 };
 
