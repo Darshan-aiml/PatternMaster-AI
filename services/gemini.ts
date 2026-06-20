@@ -26,7 +26,7 @@ export const generateOfflineWalkthrough = (
 ): AIExplanation => {
   const hints = problem.hints && problem.hints.length > 0
     ? problem.hints.map(h => `- ${h}`).join('\n')
-    : '- Look for constraints that indicate target time/space complexity.';
+    : 'Look for constraints that indicate target time/space complexity.';
   
   const approach = problem.approach || 'Use the relevant pattern to narrow down search spaces or avoid duplicate work.';
   const solution = problem.solution || '';
@@ -34,51 +34,50 @@ export const generateOfflineWalkthrough = (
   const spaceComplexity = problem.complexity?.space || 'O(1)';
 
   return {
-    patternRecognition: `💡 **Offline Walkthrough**
+    patternRecognition: `Offline Walkthrough
 
-The problem **"${problem.title}"** is solved using pattern recognition.
+The problem "${problem.title}" is solved using pattern recognition.
 
 Key approach indicators:
 ${hints}
 
-Avoid standard brute-force nested O(N²) iterations by leveraging the structured properties of the inputs.`,
+Avoid standard brute-force nested O(N2) iterations by leveraging the structured properties of the inputs.`,
 
-    stepByStep: `🚀 **Interviewer Approach Walkthrough** (Offline Mode):
+    stepByStep: `Interviewer Approach Walkthrough (Offline Mode):
 
-1. **Understand Constraints**: Identify edge cases like empty inputs, null pointers, or single-element inputs.
-2. **Apply Core Pattern Logic**:
+1. Understand Constraints: Identify edge cases like empty inputs, null pointers, or single-element inputs.
+2. Apply Core Pattern Logic:
    ${approach}
-3. **Pointers/Data Structures Maintenance**: Update markers correctly to progress towards the terminal condition.
-4. **Result Verification**: Collect and return values matching target constraints.`,
+3. Pointers and Data Structures Maintenance: Update markers correctly to progress towards the terminal condition.
+4. Result Verification: Collect and return values matching target constraints.`,
 
-    interviewPerspective: `🎯 **Interview Insights**:
-- **Brute Force First**: Start by explaining the naive approach, pointing out its inefficiency (e.g. O(N²)).
-- **Communication**: Walk the interviewer through your logic as you trace the sample inputs.
-- **Edge Cases**: Ask: "How do we handle empty lists?", "What if there are multiple valid solutions?"`,
+    interviewPerspective: `Interview Insights:
+- Brute Force First: Start by explaining the naive approach, pointing out its inefficiency (e.g. O(N2)).
+- Communication: Walk the interviewer through your logic as you trace the sample inputs.
+- Edge Cases: Ask: How do we handle empty lists? What if there are multiple valid solutions?`,
 
-    complexityAnalysis: `📊 **Complexity Analysis**:
-- **Time Complexity**: \`${timeComplexity}\` - The optimized pattern guarantees we only traverse elements a minimal number of times.
-- **Space Complexity**: \`${spaceComplexity}\` - We use minimal auxiliary memory (e.g., constant space for pointers).`,
+    complexityAnalysis: `Complexity Analysis:
+- Time Complexity: ${timeComplexity} - The optimized pattern guarantees we only traverse elements a minimal number of times.
+- Space Complexity: ${spaceComplexity} - We use minimal auxiliary memory (e.g., constant space for pointers).`,
 
-    commonMistakes: `⚠️ **Pitfalls & Mistakes**:
-- **Loop Bounds**: Watch out for off-by-one errors when managing bounds.
-- **Data Mutation**: Be careful not to mutate inputs unnecessarily if the environment expects read-only processing.
-- **Edge Inputs**: Missing checks for single-item collections or empty parameters.`,
+    commonMistakes: `Pitfalls and Mistakes:
+- Loop Bounds: Watch out for off-by-one errors when managing bounds.
+- Data Mutation: Be careful not to mutate inputs unnecessarily if the environment expects read-only processing.
+- Edge Inputs: Missing checks for single-item collections or empty parameters.`,
 
-    visualization: `✏️ **Conceptual Flow**:
-\`\`\`text
+    visualization: `Conceptual Flow:
+
 [Input Data] ---> [Process via Pattern Optimization] ---> [Condition Matched?]
                          ^                                     |
                          |-- [Update Pointers/States] <-- (No) v (Yes)
                                                                [Return Result]
-\`\`\`
 `,
 
     optimalSolution: solution
       ? `// Translating solution to ${preferredLanguage} style\n${solution}`
       : `// No local template solution found. Refer to the problem approach.`,
 
-    codeExplanation: `📝 **Optimal Walkthrough**:
+    codeExplanation: `Optimal Walkthrough:
 - By following the pattern logic, we reduce complexity.
 - Auxiliary variables/structures track current progress to avoid redundant scans.
 - This represents the optimal approach expected during a live coding round.`
@@ -105,7 +104,8 @@ Your task is to teach the candidate how to think.
 Guide the candidate through the problem "${problem.title}" with statement "${problem.statement}".
 The candidate is using "${preferredLanguage}".
 
-For each section, provide detailed, high-quality, but concise explanations (avoid fluff to keep the response time fast). Use markdown styling inside the string fields where appropriate.
+For each section, provide detailed, high-quality, but concise explanations (avoid fluff to keep the response time fast). 
+Do NOT use emojis, bold text markers (like asterisks **, ***), markdown formatting headers, or markdown styling inside the string fields. The output must be written in clean, professional plain-text format.
 
 You MUST return your response as a valid JSON object matching the following structure EXACTLY:
 {
