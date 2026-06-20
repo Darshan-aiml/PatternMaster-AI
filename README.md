@@ -10,6 +10,7 @@ PatternMaster is a React Native mobile application designed to help developers m
 * **Problem Tracking System**: Comprehensive database of curated questions categorized by difficulty, with hints, input/output samples, optimal approaches, and code solutions.
 * **Revision and Spaced Repetition**: Automatic scheduling of weak topics to ensure long-term retention of core problem-solving concepts.
 * **Local Persistence**: Integration with SQLite and secure storage for reliable offline progress tracking, user profiles, and active configurations.
+* **Live AI Walkthroughs**: Problem explanations are generated online through a backend Gemini service and cached locally after a successful response.
 
 ## Technical Stack
 
@@ -18,6 +19,14 @@ PatternMaster is a React Native mobile application designed to help developers m
 * **State Management**: Zustand for global client-side application state and reactive UI bindings.
 * **Data Storage**: Expo SQLite for persistent tabular user progress, and Expo Secure Store for private user credentials and local session data.
 * **Styling and Layout**: NativeWind (Tailwind CSS integration for React Native) and Lucide React Native for UI icons.
+
+## Environment Setup
+
+Create a local `.env` file from `.env.example` and point the app at your backend:
+
+`EXPO_PUBLIC_API_BASE_URL=http://127.0.0.1:5001`
+
+Keep Gemini secrets on the backend only. The mobile repository should only contain placeholders or non-sensitive public configuration.
 
 ## System Design
 

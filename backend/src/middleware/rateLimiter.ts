@@ -15,3 +15,15 @@ export const apiRateLimiter = rateLimit({
     message: 'Too many requests from this IP, please try again after 15 minutes.',
   },
 });
+
+export const walkthroughRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    status: 429,
+    error: 'Too Many Requests',
+    message: 'Walkthrough limit reached. Please try again after 15 minutes.',
+  },
+});

@@ -12,8 +12,8 @@ const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
 
 // Basic configurations
 app.use(cors({ origin: CORS_ORIGIN }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '32kb' }));
+app.use(express.urlencoded({ extended: true, limit: '32kb' }));
 
 // Apply rate limiting globally to protect routes
 app.use('/api', apiRateLimiter);
@@ -27,7 +27,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   res.status(500).json({
     status: 500,
     error: 'Internal Server Error',
-    message: err.message || 'An unexpected error occurred on the server.',
+    message: typeof err?.message === 'string' ? err.message : 'An unexpected error occurred on the server.',
   });
 });
 

@@ -1,7 +1,16 @@
 import { Router, Response } from 'express';
 import { AuthenticatedRequest, checkJwt } from '../middleware/auth';
+import { walkthroughRateLimiter } from '../middleware/rateLimiter';
+import { generateWalkthrough, WalkthroughRequest } from '../services/geminiWalkthrough';
 
 const router = Router();
+
+const isValidWalkthroughBody = (body: any): body is WalkthroughRequest => {
+  return typeof body?.problemId === 'string'
+    && typeof body?.title === 'string'
+    && typeof body?.statement === 'string'
+    && typeof body?.preferredLanguage === 'string';
+};
 
 /**
  * Public endpoint.
@@ -12,6 +21,23 @@ router.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
   });
+});
+
+router.post('/walkthrough', walkthroughRateLimiter, async (req, res, next) => {
+  try {
+    if (!isValidWalkthroughBody(req.body)) {
+      return res.status(400).json({
+        status: 400,
+        error: 'Bad Request',
+        message: 'Invalid walkthrough request.',
+      });
+    }
+
+    const walkthrough = await generateWalkthrough(req.body);
+    return res.json(walkthrough);
+  } catch (error) {
+    return next(error);
+  }
 });
 
 /**

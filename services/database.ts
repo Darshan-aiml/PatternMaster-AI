@@ -355,3 +355,11 @@ export const getAIExplanation = async (problemId: string) => {
     return null;
   }
 };
+
+export const deleteAIExplanation = async (problemId: string) => {
+  try {
+    await db.runAsync('DELETE FROM ai_explanations WHERE problemId = ?', [problemId]);
+  } catch (error) {
+    console.error('Error deleting AI explanation:', error);
+  }
+};

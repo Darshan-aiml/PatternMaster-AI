@@ -9,7 +9,8 @@ import { M3Pressable } from '../../components/M3Pressable';
 import { useBackToHome } from '../../hooks/useBackToHome';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fetchAIExplanation, AIExplanation } from '../../services/gemini';
-import { ActivityIndicator, TextInput } from 'react-native';
+import { ActivityIndicator } from 'react-native';
+import { deleteAIExplanation, getAIExplanation } from '../../services/database';
 
 // Enable LayoutAnimation for Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -53,7 +54,6 @@ export default function ProblemScreen() {
     interviewPerspective: 'Interview Insights',
     complexityAnalysis: 'Complexity Analysis',
     commonMistakes: 'Common Mistakes',
-    visualization: 'Visualization',
     optimalSolution: 'Optimal Solution',
     codeExplanation: 'Code Explanation'
   };
@@ -62,11 +62,19 @@ export default function ProblemScreen() {
   useEffect(() => {
     const checkCache = async () => {
       if (problem?.id) {
-        const { getAIExplanation } = require('../../services/database');
         const cached = await getAIExplanation(problem.id);
         if (cached) {
           try {
-            setAiExplanation(JSON.parse(cached));
+            const parsed = JSON.parse(cached);
+            const looksOffline = typeof parsed?.patternRecognition === 'string'
+              && parsed.patternRecognition.toLowerCase().includes('offline walkthrough');
+
+            if (looksOffline) {
+              await deleteAIExplanation(problem.id);
+              return;
+            }
+
+            setAiExplanation(parsed);
           } catch (e) {
             console.error('Failed to parse cached explanation', e);
           }
@@ -284,7 +292,7 @@ export default function ProblemScreen() {
             {loadingAI ? (
               <View style={styles.aiLoadingContainer}>
                 <ActivityIndicator size="small" color={Colors.primary} />
-                <Text style={styles.aiLoadingText}>{"Mentoring session starting... Generating interviewer walkthrough (<10s)..."}</Text>
+                <Text style={styles.aiLoadingText}>Generating AI walkthrough...</Text>
               </View>
             ) : errorAI ? (
               <View style={styles.aiErrorContainer}>

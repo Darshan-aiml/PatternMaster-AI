@@ -2,7 +2,7 @@ import * as SecureStore from 'expo-secure-store';
 
 const GEMINI_API_KEY_SECURE_KEY = 'gemini_api_key';
 
-export const saveSecureApiKey = async (key: string): Promise<void> => {
+export const saveGeminiApiKey = async (key: string): Promise<void> => {
   try {
     await SecureStore.setItemAsync(GEMINI_API_KEY_SECURE_KEY, key);
   } catch (error) {
@@ -11,7 +11,7 @@ export const saveSecureApiKey = async (key: string): Promise<void> => {
   }
 };
 
-export const getSecureApiKey = async (): Promise<string | null> => {
+export const getGeminiApiKey = async (): Promise<string | null> => {
   try {
     return await SecureStore.getItemAsync(GEMINI_API_KEY_SECURE_KEY);
   } catch (error) {
@@ -20,7 +20,7 @@ export const getSecureApiKey = async (): Promise<string | null> => {
   }
 };
 
-export const deleteSecureApiKey = async (): Promise<void> => {
+export const deleteGeminiApiKey = async (): Promise<void> => {
   try {
     await SecureStore.deleteItemAsync(GEMINI_API_KEY_SECURE_KEY);
   } catch (error) {
@@ -28,6 +28,11 @@ export const deleteSecureApiKey = async (): Promise<void> => {
     throw error;
   }
 };
+
+// Backward-compatible aliases for legacy imports.
+export const saveSecureApiKey = saveGeminiApiKey;
+export const getSecureApiKey = getGeminiApiKey;
+export const deleteSecureApiKey = deleteGeminiApiKey;
 
 const NATIVE_USERS_STORE_KEY = 'registered_users';
 
@@ -84,4 +89,3 @@ export const deleteActiveEmail = async (): Promise<void> => {
     console.error('Error deleting active email:', error);
   }
 };
-
