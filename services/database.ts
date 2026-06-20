@@ -52,55 +52,63 @@ const migrateDatabase = async () => {
 
 export const initDB = async () => {
   try {
-    db = await SQLite.openDatabaseAsync('patternmaster.db');
-    await db.execAsync(`
-      PRAGMA journal_mode = WAL;
-      PRAGMA synchronous = NORMAL;
-      PRAGMA cache_size = 2000;
-      
-      CREATE TABLE IF NOT EXISTS profile (
-        userId TEXT PRIMARY KEY NOT NULL,
-        userName TEXT,
-        preferredLanguage TEXT,
-        hasCompletedOnboarding INTEGER DEFAULT 0,
-        geminiApiKey TEXT,
-        createdAt INTEGER DEFAULT 0,
-        updatedAt INTEGER DEFAULT 0
-      );
-      
-      CREATE TABLE IF NOT EXISTS progress (
-        problemId TEXT PRIMARY KEY NOT NULL,
-        status TEXT NOT NULL,
-        attemptCount INTEGER DEFAULT 0,
-        lastSolvedAt INTEGER DEFAULT 0,
-        revisionCount INTEGER DEFAULT 0,
-        masteryLevel INTEGER DEFAULT 0,
-        createdAt INTEGER DEFAULT 0,
-        updatedAt INTEGER DEFAULT 0
-      );
+    const initPromise = (async () => {
+      db = await SQLite.openDatabaseAsync('patternmaster.db');
+      await db.execAsync(`
+        PRAGMA journal_mode = WAL;
+        PRAGMA synchronous = NORMAL;
+        PRAGMA cache_size = 2000;
+        
+        CREATE TABLE IF NOT EXISTS profile (
+          userId TEXT PRIMARY KEY NOT NULL,
+          userName TEXT,
+          preferredLanguage TEXT,
+          hasCompletedOnboarding INTEGER DEFAULT 0,
+          geminiApiKey TEXT,
+          createdAt INTEGER DEFAULT 0,
+          updatedAt INTEGER DEFAULT 0
+        );
+        
+        CREATE TABLE IF NOT EXISTS progress (
+          problemId TEXT PRIMARY KEY NOT NULL,
+          status TEXT NOT NULL,
+          attemptCount INTEGER DEFAULT 0,
+          lastSolvedAt INTEGER DEFAULT 0,
+          revisionCount INTEGER DEFAULT 0,
+          masteryLevel INTEGER DEFAULT 0,
+          createdAt INTEGER DEFAULT 0,
+          updatedAt INTEGER DEFAULT 0
+        );
 
-      CREATE TABLE IF NOT EXISTS ai_explanations (
-        problemId TEXT PRIMARY KEY NOT NULL,
-        explanation TEXT NOT NULL,
-        createdAt INTEGER DEFAULT 0,
-        updatedAt INTEGER DEFAULT 0
-      );
+        CREATE TABLE IF NOT EXISTS ai_explanations (
+          problemId TEXT PRIMARY KEY NOT NULL,
+          explanation TEXT NOT NULL,
+          createdAt INTEGER DEFAULT 0,
+          updatedAt INTEGER DEFAULT 0
+        );
+        
+        CREATE INDEX IF NOT EXISTS idx_progress_status ON progress(status);
+        CREATE INDEX IF NOT EXISTS idx_progress_mastery ON progress(masteryLevel DESC);
+        CREATE INDEX IF NOT EXISTS idx_progress_created ON progress(createdAt DESC);
+        CREATE INDEX IF NOT EXISTS idx_profile_updated ON profile(updatedAt DESC);
+        CREATE INDEX IF NOT EXISTS idx_progress_updated ON progress(updatedAt DESC);
+        CREATE INDEX IF NOT EXISTS idx_progress_status_mastery ON progress(status, masteryLevel DESC);
+        CREATE INDEX IF NOT EXISTS idx_ai_explanations_updated ON ai_explanations(updatedAt DESC);
+      `);
       
-      CREATE INDEX IF NOT EXISTS idx_progress_status ON progress(status);
-      CREATE INDEX IF NOT EXISTS idx_progress_mastery ON progress(masteryLevel DESC);
-      CREATE INDEX IF NOT EXISTS idx_progress_created ON progress(createdAt DESC);
-      CREATE INDEX IF NOT EXISTS idx_profile_updated ON profile(updatedAt DESC);
-      CREATE INDEX IF NOT EXISTS idx_progress_updated ON progress(updatedAt DESC);
-      CREATE INDEX IF NOT EXISTS idx_progress_status_mastery ON progress(status, masteryLevel DESC);
-      CREATE INDEX IF NOT EXISTS idx_ai_explanations_updated ON ai_explanations(updatedAt DESC);
-    `);
-    
-    // Run migrations for existing databases
-    await migrateDatabase();
-    
+      // Run migrations for existing databases
+      await migrateDatabase();
+    })();
+
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Database initialization timed out')), 5000)
+    );
+
+    await Promise.race([initPromise, timeoutPromise]);
     console.log('Database initialized successfully');
   } catch (error) {
     console.error('Database initialization error:', error);
+    throw error; // Rethrow to let the UI know it failed
   }
 };
 
