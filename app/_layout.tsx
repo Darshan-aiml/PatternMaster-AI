@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Stack, useRouter, usePathname, Redirect } from 'expo-router';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Text } from 'react-native';
 import { useUserStore } from '../store/useUserStore';
 import { BottomNavigation } from '../components/BottomNavigation';
 import { Colors } from '../constants/Colors';
@@ -11,10 +11,18 @@ export default function RootLayout() {
   const router = useRouter();
   const [isReady, setIsReady] = useState(false);
 
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     async function setup() {
-      await initialize();
-      setIsReady(true);
+      try {
+        await initialize();
+        setIsReady(true);
+      } catch (err: any) {
+        console.error('Initialization error:', err);
+        setError(err?.message || 'Failed to initialize app');
+        setIsReady(true);
+      }
     }
     setup();
   }, []);
@@ -26,6 +34,14 @@ export default function RootLayout() {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <Text style={{ color: 'red', textAlign: 'center' }}>Error initializing app: {error}</Text>
       </View>
     );
   }
