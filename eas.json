@@ -8,7 +8,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "84013112055-gam8vo04o1k2blhe8e06giomc96m4kup.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "${EXPO_PUBLIC_GOOGLE_CLIENT_ID}"
       }
     },
     "preview": {
@@ -17,13 +17,13 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "84013112055-gam8vo04o1k2blhe8e06giomc96m4kup.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "${EXPO_PUBLIC_GOOGLE_CLIENT_ID}"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "84013112055-gam8vo04o1k2blhe8e06giomc96m4kup.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "${EXPO_PUBLIC_GOOGLE_CLIENT_ID}"
       }
     }
   },
